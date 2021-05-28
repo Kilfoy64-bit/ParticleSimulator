@@ -2,43 +2,43 @@
 
 float* Rect::CalculatePosition()
 {
-    float positions[16] = {
+    m_Positions = {
             m_Center.x - (0.5f * m_Width), m_Center.y - (0.5f * m_Height), 0.0f, 0.0f, // 0
             m_Center.x + (0.5f * m_Width), m_Center.y - (0.5f * m_Height), 1.0f, 0.0f, // 1
             m_Center.x + (0.5f * m_Width), m_Center.y + (0.5f * m_Height), 1.0f, 1.0f, // 2
             m_Center.x - (0.5f * m_Width), m_Center.y + (0.5f * m_Height), 0.0f, 1.0f  // 3
     };
-    return positions;
+    return &m_Positions[0];
 };
 
-Coordinates Rect::CalculateNewCenter(Direction direction)
+Point Rect::CalculateNewCenter(Direction direction)
 {
-    Coordinates newCenter = { m_Center.x, m_Center.y };
+    Point newCenter = { m_Center.x, m_Center.y };
     switch (direction)
     {
     
     case Direction::Up:
-        newCenter = { m_Center.x, m_Center.y + SPEED};
+        newCenter = { m_Center.x, m_Center.y + m_Speed};
         break;
     case Direction::Right:
-        newCenter = { m_Center.x + SPEED, m_Center.y};
+        newCenter = { m_Center.x + m_Speed, m_Center.y};
         break;
     case Direction::Down:
-        newCenter = { m_Center.x, m_Center.y - SPEED};
+        newCenter = { m_Center.x, m_Center.y - m_Speed };
         break;
     case Direction::Left:
-        newCenter = { m_Center.x - SPEED, m_Center.y};
+        newCenter = { m_Center.x - m_Speed, m_Center.y};
         break;
     }
     return newCenter;
 };
 
-Rect::Rect(Renderer& renderer, Coordinates center, float side)
-    : Entity(renderer, center), m_Width(side), m_Height(side)
+Rect::Rect(Point center, float side)
+    : Entity(center), m_Width(side), m_Height(side)
 {
     float* positions = CalculatePosition();
 
-    m_IndexBuffer.Update(indices, 6);
+    m_IndexBuffer.Update(m_Indices, 6);
     
     m_VertexBuffer.Update(positions, 4 * 4 * sizeof(float));
     m_VertexBufferlayout.Push<float>(2);
@@ -50,12 +50,12 @@ Rect::Rect(Renderer& renderer, Coordinates center, float side)
     m_IndexBuffer.Unbind();
 };
 
-Rect::Rect(Renderer& renderer, Coordinates center, float width, float height)
-    : Entity(renderer, center), m_Width(width), m_Height(height)
+Rect::Rect(Point center, float width, float height)
+    : Entity(center), m_Width(width), m_Height(height)
 {
     float* positions = CalculatePosition();
 
-    m_IndexBuffer.Update(indices, 6);
+    m_IndexBuffer.Update(m_Indices, 6);
 
     m_VertexBuffer.Update(positions, 4 * 4 * sizeof(float));
     m_VertexBufferlayout.Push<float>(2);
@@ -74,14 +74,14 @@ Rect::~Rect()
     m_IndexBuffer.Unbind();
 };
 
-void Rect::Render(Shader &shader) const
+void Rect::Render(Renderer& renderer, Shader& shader) const
 {
     shader.Bind();
     shader.SetUniform4f("u_Color", 0.0f, 0.3f, 1.0f, 1.0f);
-    shader.SetUniformMat4f("u_MVP", proj);
+    shader.SetUniformMat4f("u_MVP", projectionMatrix);
     shader.Unbind();
 
-    m_Renderer.Draw(m_VertexArray, m_IndexBuffer, shader);
+    renderer.Draw(m_VertexArray, m_IndexBuffer, shader);
 };
 
 void Rect::Move(Direction direction)
