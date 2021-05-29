@@ -3,39 +3,53 @@
 #include <math.h>
 #include <vector>
 
-float* Particle::CalculatePosition()
+void Particle::CalculatePosition()
 {
 	m_Positions = {};
 
-	float prevX = m_Center.x;
-	float prevY = m_Center.y - m_Radius;
+	// Center 0 
+	m_Positions.push_back(m_Center.x);
+	m_Positions.push_back(m_Center.y);
+	m_Positions.push_back(0.0f);
+	m_Positions.push_back(0.0f);
+
+	// Directly above circle 1
+	m_Positions.push_back(m_Center.x);
+	m_Positions.push_back(m_Center.y - m_Radius);
+	m_Positions.push_back(0.0f);
+	m_Positions.push_back(0.0f);
 	
 	for (int i = 0; i <= m_Steps; i++) {
 		float newX = m_Radius * sin(m_Beta * i);
 		float newY = m_Radius * cos(m_Beta * i);
 
-		m_Positions.push_back(m_Center.x);
-		m_Positions.push_back(m_Center.y);
+		m_Positions.push_back(m_Center.x + newX);
+		m_Positions.push_back(m_Center.y + newY);
 		m_Positions.push_back(0.0f);
-
-		m_Positions.push_back(prevX);
-		m_Positions.push_back(prevY);
 		m_Positions.push_back(0.0f);
-
-		m_Positions.push_back(newX);
-		m_Positions.push_back(newY);
-		m_Positions.push_back(0.0f);
-
-		prevX = newX;
-		prevY = newY;
 	}
 
-	return &m_Positions[0];
 }
 
 Point Particle::CalculateNewCenter(Direction direction)
 {
-	return Point();
+	Point newCenter = { m_Center.x, m_Center.y };
+	switch (direction)
+	{
+	case Direction::Up:
+		newCenter = { m_Center.x, m_Center.y + m_Speed };
+		break;
+	case Direction::Right:
+		newCenter = { m_Center.x + m_Speed, m_Center.y };
+		break;
+	case Direction::Down:
+		newCenter = { m_Center.x, m_Center.y - m_Speed };
+		break;
+	case Direction::Left:
+		newCenter = { m_Center.x - m_Speed, m_Center.y };
+		break;
+	}
+	return newCenter;
 }
 
 Particle::Particle(Point center, float radius)
@@ -47,14 +61,13 @@ Particle::Particle(Point center, float radius)
 		m_Indices.push_back(i+2);
 	}
 
-	float* positions = CalculatePosition();
+	CalculatePosition();
 
-	m_IndexBuffer.Update(&m_Indices[0], ((m_Steps + 1) * 3));
-	m_VertexBuffer.Update(positions, m_Positions.size() * 3 * sizeof(float));
+	m_IndexBuffer.Update(&m_Indices[0], m_Indices.size());
+	m_VertexBuffer.Update(&m_Positions[0], m_Positions.size() * sizeof(float));
 
-	for (int i = 0; i <= m_Steps; i++) {
-		m_VertexBufferlayout.Push<float>(1);
-	}
+	m_VertexBufferlayout.Push<float>(2);
+	m_VertexBufferlayout.Push<float>(2);
 
 	m_VertexArray.AddBuffer(m_VertexBuffer, m_VertexBufferlayout);
 
@@ -79,4 +92,7 @@ void Particle::Render(Renderer& renderer, Shader& shader) const
 
 void Particle::Move(Direction direction)
 {
+	m_Center = CalculateNewCenter(direction);
+	CalculatePosition();
+	m_VertexBuffer.Update(&m_Positions[0], m_Positions.size() * sizeof(float));
 }

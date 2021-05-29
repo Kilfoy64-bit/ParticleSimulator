@@ -17,7 +17,7 @@ private:
 	float m_Height;
 
     std::vector<float> m_Positions;
-    unsigned int m_Indices[6] = {
+    std::vector<unsigned int> m_Indices = {
         0, 1, 2,
         2, 3, 0
     };
@@ -27,7 +27,7 @@ private:
     VertexBufferLayout m_VertexBufferlayout;
     IndexBuffer m_IndexBuffer;
 
-    float* CalculatePosition();
+    void CalculatePosition();
     Point CalculateNewCenter(Direction direction);
 public: 
     Rect()

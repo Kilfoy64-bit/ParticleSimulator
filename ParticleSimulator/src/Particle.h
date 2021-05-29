@@ -13,8 +13,8 @@
 
 class Particle : public Entity {
 private:
-    const float m_Speed = 1.0f;
-    static const int m_Steps = 10;
+    const float m_Speed = 5.0f;
+    static const int m_Steps = 100;
     const float m_Beta = 3.1415926 * 2.0f / m_Steps;
 
     float m_Radius;
@@ -27,7 +27,7 @@ private:
     VertexBufferLayout m_VertexBufferlayout;
     IndexBuffer m_IndexBuffer;
 
-    float* CalculatePosition();
+    void CalculatePosition();
     Point CalculateNewCenter(Direction direction);
 public:
     Particle()

@@ -1,6 +1,6 @@
 #include "Rect.h"
 
-float* Rect::CalculatePosition()
+void Rect::CalculatePosition()
 {
     m_Positions = {
             m_Center.x - (0.5f * m_Width), m_Center.y - (0.5f * m_Height), 0.0f, 0.0f, // 0
@@ -8,7 +8,6 @@ float* Rect::CalculatePosition()
             m_Center.x + (0.5f * m_Width), m_Center.y + (0.5f * m_Height), 1.0f, 1.0f, // 2
             m_Center.x - (0.5f * m_Width), m_Center.y + (0.5f * m_Height), 0.0f, 1.0f  // 3
     };
-    return &m_Positions[0];
 };
 
 Point Rect::CalculateNewCenter(Direction direction)
@@ -36,11 +35,11 @@ Point Rect::CalculateNewCenter(Direction direction)
 Rect::Rect(Point center, float side)
     : Entity(center), m_Width(side), m_Height(side)
 {
-    float* positions = CalculatePosition();
+    CalculatePosition();
 
-    m_IndexBuffer.Update(m_Indices, 6);
-    
-    m_VertexBuffer.Update(positions, 4 * 4 * sizeof(float));
+    m_IndexBuffer.Update(&m_Indices[0], m_Indices.size());
+    m_VertexBuffer.Update(&m_Positions[0], m_Positions.size() * sizeof(float));
+
     m_VertexBufferlayout.Push<float>(2);
     m_VertexBufferlayout.Push<float>(2);
     m_VertexArray.AddBuffer(m_VertexBuffer, m_VertexBufferlayout);
@@ -53,11 +52,9 @@ Rect::Rect(Point center, float side)
 Rect::Rect(Point center, float width, float height)
     : Entity(center), m_Width(width), m_Height(height)
 {
-    float* positions = CalculatePosition();
+    m_IndexBuffer.Update(&m_Indices[0], m_Indices.size());
+    m_VertexBuffer.Update(&m_Positions[0], m_Positions.size() * sizeof(float));
 
-    m_IndexBuffer.Update(m_Indices, 6);
-
-    m_VertexBuffer.Update(positions, 4 * 4 * sizeof(float));
     m_VertexBufferlayout.Push<float>(2);
     m_VertexBufferlayout.Push<float>(2);
     m_VertexArray.AddBuffer(m_VertexBuffer, m_VertexBufferlayout);
@@ -87,6 +84,6 @@ void Rect::Render(Renderer& renderer, Shader& shader) const
 void Rect::Move(Direction direction)
 {
     m_Center = CalculateNewCenter(direction);
-    float* positions = CalculatePosition();
-    m_VertexBuffer.Update(positions, 4 * 4 * sizeof(float));
+    CalculatePosition();
+    m_VertexBuffer.Update(&m_Positions[0], m_Positions.size() * sizeof(float));
 }

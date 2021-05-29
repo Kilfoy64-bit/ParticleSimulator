@@ -52,9 +52,10 @@ int main(void)
         std::vector<Entity*> entities;
         
         for (int i = 75; i < 1920; i+=100) {
-            /*Entity* rectEntity = new Rect({ 0.0f + i, 1080.0f }, 75);            
+            /*Entity* rectEntity = new Rect({ 0.0f + i, 900.0f }, 75);            
             entities.push_back(rectEntity);*/
-            Entity* particleEntity = new Particle({ 0.0f + i }, 50);
+
+            Entity* particleEntity = new Particle({ 0.0f + i, 900.0f }, 50);
             entities.push_back(particleEntity);
         }
 
