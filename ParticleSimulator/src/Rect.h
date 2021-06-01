@@ -8,13 +8,12 @@
 #include "VertexBuffer.h"
 #include "VertexBufferLayout.h"
 
-
-
 class Rect : public Entity {
 private:
-    const float m_Speed = 1.0f;
+    float m_Speed = 1.0f;
 	float m_Width;
 	float m_Height;
+    Direction m_Direction = Direction::Stationary;
 
     std::vector<float> m_Positions;
     std::vector<unsigned int> m_Indices = {
@@ -27,15 +26,17 @@ private:
     VertexBufferLayout m_VertexBufferlayout;
     IndexBuffer m_IndexBuffer;
 
-    void CalculatePosition();
-    Point CalculateNewCenter(Direction direction);
+    void updateBuffers();
+    void calculatePosition();
+    void moveDirection(Direction direction);
+
 public: 
     Rect()
-        : m_Width(0.0f), m_Height(0.0f) {};
-    Rect(Point center, float side);
-    Rect(Point center, float width, float height);
+        : m_Speed(0.0f), m_Width(0.0f), m_Height(0.0f) {};
+    Rect(Point2D center, float side);
+    Rect(Point2D center, float width, float height);
 	~Rect();
 
-	void Render(Renderer& renderer, Shader& shader) const;
-    void Move(Direction direction);
+	void render(Renderer& renderer, Shader& shader) const;
+    void update(long deltaTime);
 };

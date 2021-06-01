@@ -10,9 +10,9 @@ public:
 	IndexBuffer(const unsigned int* data, unsigned int count);
 	~IndexBuffer();
 
-	void Update(const unsigned int* data, unsigned int count);
-	void Bind() const;
-	void Unbind() const;
+	void update(const unsigned int* data, unsigned int count);
+	void bind() const;
+	void unbind() const;
 
-	inline unsigned int GetCount() const { return m_Count; }
+	inline unsigned int getCount() const { return m_Count; }
 };

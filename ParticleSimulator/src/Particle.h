@@ -1,40 +1,53 @@
 #pragma once
 
 #include <iostream>
+#include <vector>
 #include <string>
 
+#include "Box.h"
+#include "Vector2D.h"
 #include "Entity.h"
+
 #include "VertexArray.h"
 #include "VertexBuffer.h"
 #include "VertexBufferLayout.h"
 
-#include "glm/glm.hpp"
-#include "glm/gtc/matrix_transform.hpp"
+#define PI 3.1415926
 
 class Particle : public Entity {
 private:
-    const float m_Speed = 5.0f;
-    static const int m_Steps = 100;
-    const float m_Beta = 3.1415926 * 2.0f / m_Steps;
-
+    unsigned int m_Vertices = 100; // Represents number of triangular sections that approximate shape, use a high number to approximate a circle.
     float m_Radius;
+    float m_Speed;
+    Vector2D m_Velocity;
 
-    std::vector<float> m_Positions;
-    std::vector<unsigned int> m_Indices;
+    float m_Beta = PI * 2.0 / m_Vertices;
+    
+    Box m_Container;
 
-    VertexArray m_VertexArray;
-    VertexBuffer m_VertexBuffer;
-    VertexBufferLayout m_VertexBufferlayout;
-    IndexBuffer m_IndexBuffer;
+    void updateBuffers();
 
-    void CalculatePosition();
-    Point CalculateNewCenter(Direction direction);
+    void calculatePosition();
+    void move(long deltaTime);
+    void resolveContainerCollision();
+
 public:
-    Particle()
-        : m_Radius(0.0f) {};
-    Particle(Point center, float radius);
+    Particle(Box &container)
+        : m_Radius(0.0f), m_Speed(0.0f), m_Container(container) {};
+    Particle(Point2D center, Box &container);
     ~Particle();
 
-    void Render(Renderer& renderer, Shader& shader) const;
-    void Move(Direction direction);
+    bool detectParticleCollision(Particle other);
+    
+    inline Point2D getPosition() { return m_Position; }
+    inline float getRadius() { return m_Radius; }
+
+    inline void setVertices(unsigned int vertices) { m_Vertices = vertices; };
+    inline void setSpeed(float speed) { m_Speed = speed; };
+    inline void setRadius(float radius) { m_Radius = radius; };
+    inline void setColor(std::vector<float> RGBA) { m_Color = RGBA; };
+
+
+    void render(Renderer& renderer, Shader& shader) const;
+    void update(long deltaTime);
 };

@@ -1,20 +1,31 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include <vector>
+#include <iostream>
+#include <chrono>
 
-#include "Renderer.h"
-#include "Shader.h"
-#include "Texture.h"
+#include "Simulator.h"
+#include "RandomNumberGenerator.h"
 
-#include "Entity.h"
-#include "Rect.h"
-#include "Particle.h"
+RandomNumberGenerator RandomNumberGenerator::s_Instance;
+
+long getTimeMS() {
+    auto now = std::chrono::system_clock::now();
+    auto now_ms = std::chrono::time_point_cast<std::chrono::milliseconds>(now);
+    auto epoch = now_ms.time_since_epoch();
+    auto value = std::chrono::duration_cast<std::chrono::milliseconds>(epoch);
+    long duration = value.count();
+    return duration;
+}
 
 int main(void)
 {
-    GLFWwindow* window;
+    const int SCREEN_WIDTH = 1920;
+    const int SCREEN_HEIGHT = 1080;
+    const char* SCREEN_TITLE = "Particle Simulator";
 
+    GLFWwindow* window;
+    
     {
         /* Initialize the library */
         if (!glfwInit())
@@ -25,7 +36,7 @@ int main(void)
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
         /* Create a windowed mode window and its OpenGL context */
-        window = glfwCreateWindow(1920, 1080, "Hello World", NULL, NULL);
+        window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE, NULL, NULL);
         if (!window)
         {
             glfwTerminate();
@@ -35,7 +46,7 @@ int main(void)
         /* Make the window's context current */
         glfwMakeContextCurrent(window);
 
-        glfwSwapInterval(1);
+        glfwSwapInterval(0);
 
         if (glewInit() != GLEW_OK) {
             std::cout << "Error!" << std::endl;
@@ -43,41 +54,18 @@ int main(void)
 
         std::cout << glGetString(GL_VERSION) << std::endl;
 
-        GLCall(glEnable(GL_BLEND));
-        GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+        Simulator simulator(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE);
 
-        Renderer renderer;
-        Shader shader("res/shaders/Basic.shader");
-
-        std::vector<Entity*> entities;
-        
-        for (int i = 75; i < 1920; i+=100) {
-            /*Entity* rectEntity = new Rect({ 0.0f + i, 900.0f }, 75);            
-            entities.push_back(rectEntity);*/
-
-            Entity* particleEntity = new Particle({ 0.0f + i, 900.0f }, 50);
-            entities.push_back(particleEntity);
-        }
-
-        /*Rect rect1(renderer, {150.0f, 150.0f}, 175, 100);
-        Rect rect2(renderer, {700.0f, 400.0f}, 200);
-
-        Entity* entityRect1 = &rect1;
-        Entity* entityRect2 = &rect2;
-
-        entities.push_back(entityRect1);
-        entities.push_back(entityRect2);*/
-
+        long NewTime = getTimeMS();
+        long OldTime;
         /* Loop until the user closes the window */
         while (!glfwWindowShouldClose(window))
         {
-            /* Render here */
-            renderer.Clear();
+            OldTime = NewTime;
+            NewTime = getTimeMS();
 
-            for (unsigned int i = 0; i < entities.size(); i++) {
-                entities[i]->Move(Direction::Down);
-                entities[i]->Render(renderer, shader);
-            }
+            /* Render here */
+            simulator.playStep(NewTime - OldTime);
 
             /* Swap front and back buffers */
             glfwSwapBuffers(window);
@@ -86,6 +74,8 @@ int main(void)
             glfwPollEvents();
         }
     }
+
+    
     glfwTerminate();
     return 0;
 }

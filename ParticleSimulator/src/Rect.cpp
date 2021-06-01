@@ -1,89 +1,82 @@
 #include "Rect.h"
 
-void Rect::CalculatePosition()
+void Rect::updateBuffers()
+{
+    m_IndexBuffer.update(&m_Indices[0], m_Indices.size());
+    m_VertexBuffer.update(&m_Positions[0], m_Positions.size() * sizeof(float));
+
+    m_VertexBufferlayout.Push<float>(2);
+
+    m_VertexArray.addBuffer(m_VertexBuffer, m_VertexBufferlayout);
+
+    m_VertexArray.unbind();
+    m_VertexBuffer.unbind();
+    m_IndexBuffer.unbind();
+}
+
+void Rect::calculatePosition()
 {
     m_Positions = {
-            m_Center.x - (0.5f * m_Width), m_Center.y - (0.5f * m_Height), 0.0f, 0.0f, // 0
-            m_Center.x + (0.5f * m_Width), m_Center.y - (0.5f * m_Height), 1.0f, 0.0f, // 1
-            m_Center.x + (0.5f * m_Width), m_Center.y + (0.5f * m_Height), 1.0f, 1.0f, // 2
-            m_Center.x - (0.5f * m_Width), m_Center.y + (0.5f * m_Height), 0.0f, 1.0f  // 3
+            m_Position.x - (0.5f * m_Width), m_Position.y - (0.5f * m_Height), // 0
+            m_Position.x + (0.5f * m_Width), m_Position.y - (0.5f * m_Height), // 1
+            m_Position.x + (0.5f * m_Width), m_Position.y + (0.5f * m_Height), // 2
+            m_Position.x - (0.5f * m_Width), m_Position.y + (0.5f * m_Height)  // 3
     };
-};
+}
 
-Point Rect::CalculateNewCenter(Direction direction)
+void Rect::moveDirection(Direction direction)
 {
-    Point newCenter = { m_Center.x, m_Center.y };
     switch (direction)
     {
-    
     case Direction::Up:
-        newCenter = { m_Center.x, m_Center.y + m_Speed};
+        m_Position = { m_Position.x, m_Position.y + m_Speed };
         break;
     case Direction::Right:
-        newCenter = { m_Center.x + m_Speed, m_Center.y};
+        m_Position = { m_Position.x + m_Speed, m_Position.y };
         break;
     case Direction::Down:
-        newCenter = { m_Center.x, m_Center.y - m_Speed };
+        m_Position = { m_Position.x, m_Position.y - m_Speed };
         break;
     case Direction::Left:
-        newCenter = { m_Center.x - m_Speed, m_Center.y};
+        m_Position = { m_Position.x - m_Speed, m_Position.y };
         break;
     }
-    return newCenter;
-};
+    calculatePosition();
+}
 
-Rect::Rect(Point center, float side)
+Rect::Rect(Point2D center, float side)
     : Entity(center), m_Width(side), m_Height(side)
 {
-    CalculatePosition();
+    calculatePosition();
+    updateBuffers();
+}
 
-    m_IndexBuffer.Update(&m_Indices[0], m_Indices.size());
-    m_VertexBuffer.Update(&m_Positions[0], m_Positions.size() * sizeof(float));
-
-    m_VertexBufferlayout.Push<float>(2);
-    m_VertexBufferlayout.Push<float>(2);
-    m_VertexArray.AddBuffer(m_VertexBuffer, m_VertexBufferlayout);
-
-    m_VertexArray.Unbind();
-    m_VertexBuffer.Unbind();
-    m_IndexBuffer.Unbind();
-};
-
-Rect::Rect(Point center, float width, float height)
+Rect::Rect(Point2D center, float width, float height)
     : Entity(center), m_Width(width), m_Height(height)
 {
-    m_IndexBuffer.Update(&m_Indices[0], m_Indices.size());
-    m_VertexBuffer.Update(&m_Positions[0], m_Positions.size() * sizeof(float));
-
-    m_VertexBufferlayout.Push<float>(2);
-    m_VertexBufferlayout.Push<float>(2);
-    m_VertexArray.AddBuffer(m_VertexBuffer, m_VertexBufferlayout);
-
-    m_VertexArray.Unbind();
-    m_VertexBuffer.Unbind();
-    m_IndexBuffer.Unbind();
+    calculatePosition();
+    updateBuffers();
 }
 
 Rect::~Rect()
 {
-    m_VertexArray.Unbind();
-    m_VertexBuffer.Unbind();
-    m_IndexBuffer.Unbind();
-};
+    m_VertexArray.unbind();
+    m_VertexBuffer.unbind();
+    m_IndexBuffer.unbind();
+}
 
-void Rect::Render(Renderer& renderer, Shader& shader) const
+void Rect::render(Renderer& renderer, Shader& shader) const
 {
-    shader.Bind();
-    shader.SetUniform4f("u_Color", 0.0f, 0.3f, 1.0f, 1.0f);
-    shader.SetUniformMat4f("u_MVP", projectionMatrix);
-    shader.Unbind();
+    shader.bind();
+    shader.setUniform4f("u_Color", 0.0f, 0.3f, 1.0f, 1.0f);
+    shader.setUniformMat4f("u_MVP", projectionMatrix);
+    shader.unbind();
 
-    renderer.Draw(m_VertexArray, m_IndexBuffer, shader);
-};
+    renderer.draw(m_VertexArray, m_IndexBuffer, shader);
+}
 
-void Rect::Move(Direction direction)
+void Rect::update(long deltaTime)
 {
-    m_Center = CalculateNewCenter(direction);
-    CalculatePosition();
-    m_VertexBuffer.Update(&m_Positions[0], m_Positions.size() * sizeof(float));
+    moveDirection(m_Direction);
+    m_VertexBuffer.update(&m_Positions[0], m_Positions.size() * sizeof(float));
 }
