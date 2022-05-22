@@ -4,12 +4,13 @@
 #include <iostream>
 #include <chrono>
 
-#include "Simulator.h"
-#include "RandomNumberGenerator.h"
+#include "SimulationSystem/Simulator/Simulator.h"
+#include "PhysicsEngine/RandomNumberGenerator/RandomNumberGenerator.h"
 
 RandomNumberGenerator RandomNumberGenerator::s_Instance;
 
-long getTimeMS() {
+long getTimeMS()
+{
     auto now = std::chrono::system_clock::now();
     auto now_ms = std::chrono::time_point_cast<std::chrono::milliseconds>(now);
     auto epoch = now_ms.time_since_epoch();
@@ -25,7 +26,7 @@ int main(void)
     const char* SCREEN_TITLE = "Particle Simulator";
 
     GLFWwindow* window;
-    
+
     {
         /* Initialize the library */
         if (!glfwInit())
@@ -48,7 +49,8 @@ int main(void)
 
         glfwSwapInterval(0);
 
-        if (glewInit() != GLEW_OK) {
+        if (glewInit() != GLEW_OK)
+        {
             std::cout << "Error!" << std::endl;
         }
 
@@ -56,16 +58,16 @@ int main(void)
 
         Simulator simulator(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE);
 
-        long NewTime = getTimeMS();
-        long OldTime;
+        long newTime = getTimeMS();
+        long oldTime;
         /* Loop until the user closes the window */
         while (!glfwWindowShouldClose(window))
         {
-            OldTime = NewTime;
-            NewTime = getTimeMS();
+            oldTime = newTime;
+            newTime = getTimeMS();
 
             /* Render here */
-            simulator.playStep(NewTime - OldTime);
+            simulator.playStep(newTime - oldTime);
 
             /* Swap front and back buffers */
             glfwSwapBuffers(window);
@@ -75,7 +77,7 @@ int main(void)
         }
     }
 
-    
+
     glfwTerminate();
     return 0;
 }
